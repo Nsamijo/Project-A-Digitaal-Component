@@ -28,8 +28,9 @@ showOpstelling = False
 
 #screen data
 backgrounds = []
+shops = []
 logo = PImage
-backImages = ['begin.jpg']
+backImages = ['level', 'shop']
 
 #jan globals
 valkuilen = []
@@ -68,19 +69,26 @@ gamescreen = False
 namecomplete = False
 playercomplete = False
 
-#Nathan Samijo #Nathan Samijo
+#Nathan Samijo 
 def nathanSetup():
-    global backImages, backgrounds, logo
-    for x in backImages:
-        backgrounds.append(loadImage(x))
+    '''load in all of the backgrounds'''
+    global backImages, backgrounds, logo, shops
+    for x in range(5):
+        backgrounds.append(loadImage(backImages[0] + str(x) + '.jpg'))
+    for x in range(1, 5):
+        shops.append( loadImage(backImages[1] + str(x) + '.png'))
+    for x in shops:
+        x.resize(width, height)
+    for x in backgrounds:
+        x.resize(width, height)
     logo = loadImage('logo.png')
     logo.resize(200, 150)
         
 def setBackground():
     global backgrounds, usernames, level, logo
-    if len(usernames) == 0:
-        background(backgrounds[0])
-        image(logo, width / 2 - 100, 10)
+    if len(usernames) > 0:
+        background(backgrounds[level[turn]])
+        image(logo, width/2 - 100, 10)
     else:
         background(backgrounds[0])
         image(logo, width / 2 - 100, 10)
@@ -314,7 +322,6 @@ def mouseJan():
             showOpstelling = False
             
 #Steven Ren
-
 #voor dice animation
 def check():
     '''Current framecount word start frameCount'''
@@ -347,7 +354,7 @@ def randomizer():
 #voor invoer van namen: limiet van karakters voor namen = 10 / backspace om 1 karakter te deleten
 def keySteven():
     '''naam invoer functie'''
-    global currentname, nameselect,currentplayername,amountPlayers,namecomplete,nameholder
+    global currentname, nameselect, currentplayername, amountPlayers, namecomplete, nameholder, level, positions, items
     if nameselect:
         if namecomplete == False:#wanneer alle namen zijn ingetikt, kan je ook niet meer tikken
             if key != CODED and key != ENTER and len(currentname)<10 and key != BACKSPACE:
@@ -358,6 +365,9 @@ def keySteven():
                 nameholder = nameholder + '_'
             if key == ENTER and currentplayername-1<amountPlayers and currentname!='':
                 usernames.append(currentname)
+                level.append(0)
+                positions.append(0)
+                items.append(0)
                 currentname = currentname[:len(currentname)-len(currentname)]
                 nameholder = '__________'
                 currentplayername+=1 
@@ -441,7 +451,9 @@ def drawturn():
 #knoppen voor playerselect,nameselect en gamescreen scherm
 def mouseSteven():
     '''mouse functionality for all screens'''
-    global playerselect, amountPlayers, playercomplete, nameselect, namecomplete, nameholder, usernames, currentplayername, currentname, gamescreen, rolled, turn, paytext, numberrolled, menu, nathan
+    global playerselect, amountPlayers, playercomplete, nameselect, namecomplete, nameholder, usernames, currentplayername
+    global currentname, gamescreen, rolled, turn, paytext, numberrolled, menu, nathan, level, positions, items
+    global valkuilen
     #playerselect scherm buttons, nameselect scherm buttons en gamescreen scherm buttons
     if playerselect:
         if 760 < mouseX < 860 and 400 < mouseY < 500:
@@ -480,7 +492,10 @@ def mouseSteven():
                 fill(0)
                 rect(610,680,760,740)
             if currentplayername-1<amountPlayers and currentname!= '':#checkt of je naam niet blank is en het checkt of het limiet voor namen al bereikt is
-                usernames.append(currentname) 
+                usernames.append(currentname)
+                level.append(0)
+                positions.append(0)
+                items.append(0)
                 currentname = currentname[:len(currentname)-len(currentname)]
                 currentplayername+=1 
                 nameholder = '__________'
@@ -492,6 +507,9 @@ def mouseSteven():
             currentname = ''
             currentplayername = 1
             usernames = []
+            level = []
+            positions = []
+            items = []
             nameselect = False
             playerselect = True
             amountPlayers = 0
@@ -502,6 +520,8 @@ def mouseSteven():
             rect(1240,680,1390,740)
             nameselect = False
             gamescreen = True
+            if len(valkuilen) == 0:
+                standaard()
     if gamescreen:
         if paytext==False:
             if 1640 < mouseX < 1790 and 640 < mouseY < 740 and rolled == True:#button om naar volgende beurt te gaan
@@ -535,12 +555,12 @@ def playerselect1():
         rect(x, 400, x + 100, 500,50)
     
     #Terug,Kies het aantal spelers, Volgende RECT in die order  -------------------------------------------
-    fill(200,0,0)
+    fill(255,0,0)
     rect(0,980,150,1080,50)
     fill(200,200,0)
     rect(760,250,1160,350) 
     if playercomplete:
-        fill(0,200,0)
+        fill(0,255,0)
         rect(1720,980,1920,1080,50) 
         drawamountPlayers()
 
@@ -577,7 +597,7 @@ def playerselect1():
         fill(0)
         text('4',1100,463)
     elif 0 < mouseX < 150 and 980 < mouseY < 1080:
-        fill(200)
+        fill(200, 0, 0)
         rect(0,980,150,1080,50)
         fill(0)
         textSize(20)
@@ -585,7 +605,7 @@ def playerselect1():
         textSize(40)
     if playercomplete:
         if 1720 < mouseX < 1980 and 980 < mouseY < 1080:
-            fill(200)
+            fill(0, 200, 0)
             rect(1720,980,1920,1080,50)
             fill(0)
             textSize(20)
@@ -611,7 +631,9 @@ def nameselect1():
     rect(600,300,1400,750) 
     
     #RETURN TO PLAYER SELECT RECT, START RECT, TOEVOEGEN RECT EN NAAM INVOER RECT IN DIE ORDER! ---------------------------------------------------
+    fill(255, 0, 0)
     rect(200,760,500,860,50)
+    fill(255)
     if namecomplete:
         rect(1240,680,1390,740) 
     else:
@@ -688,13 +710,13 @@ def nameselect1():
     #laat zien wanneer je muis over een button is, toevoegen, terug en start------------------------------------------------
     if 610 < mouseX < 760 and 680 < mouseY < 740:
         if namecomplete == False:
-            fill(200)
+            fill(200, 0, 0)
             rect(610,680,760,740)
             fill(0)
             textSize(20)
             text('Toevoegen',685,715)
     if 200 < mouseX < 500 and 760 < mouseY < 860:
-        fill(200)
+        fill(200, 0, 0)
         rect(200,760,500,860,50) 
         fill(0)
         textSize(40)
@@ -709,7 +731,7 @@ def nameselect1():
             
 def gamescreen1():
     '''game screen'''
-    global amountPlayers, usernames, numberrolled, paytext
+    global amountPlayers, usernames, numberrolled, paytext, items, turn
     setBackground() 
     rectMode(CORNERS)
     textAlign(CENTER)
@@ -796,7 +818,11 @@ def gamescreen1():
     #als er nog niet gerollt is -------------------------------------------------
     else:
         rect(1530,640,1630,740) #rollen knop
-        image(rollthedice,1531,641) 
+        image(rollthedice,1531,641)
+    
+    #positions check || Nathan Samijo
+    
+    #kijkt of the user een item heeft of niet || Nathan Samijo
         
     #als iedereen is geweest
     if paytext:
