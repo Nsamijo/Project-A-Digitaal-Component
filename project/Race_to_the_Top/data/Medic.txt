@@ -1,0 +1,3 @@
+Alle spelers gooien de dobbelsteen voor de speler die laatste staat. 
+Deze zet dan alle stappen opgeteld vooruit.
+Indien deze bij het eind van het level aankomt mag deze verder

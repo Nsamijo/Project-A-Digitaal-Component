@@ -1,7 +1,13 @@
 import random
+import audrius
 #Module voor Digitaal component
 
 #globals hier definen aub || zet het onder je naam en dan waarvoor deze is
+
+#audrius globals
+Audrius = False
+event = False
+once = True
 
 #nathan globals
 
@@ -41,6 +47,7 @@ events = []
 toeristenWinkel = [21, 41, 61, 81]
 
 #Steven globals
+pech = False
 
 '''player select screen'''
 amountPlayers = 0
@@ -83,6 +90,7 @@ def nathanSetup():
         x.resize(width, height)
     logo = loadImage('logo.png')
     logo.resize(200, 150)
+    audrius.audriusSetup()
         
 def setBackground():
     global backgrounds, usernames, level, logo
@@ -148,7 +156,22 @@ def mouseNathan():
             nathan = False
             steven = True
             playerselect = True
-        
+            
+def positionCheck():
+    '''This function checks if a player has stepped on a special position'''
+    global positions, turn, usernames
+    global valkuilen, winkel, tunnels, vogels, events, toeristenWinkel
+    global steven, Audrius, event, once
+    
+    if positions[turn] in events:
+        event = True
+        if once:
+            steven = not True
+            Audrius = not steven
+            event = True
+            audrius.setTriggerMan(usernames[turn])
+            once = False
+    #positions[turn] in [valkuilen, winkel, tunnels, vogels, events, toeristenWinkel]
         
 #Jan Roozemond
 def standaard():
@@ -452,7 +475,7 @@ def drawturn():
 def mouseSteven():
     '''mouse functionality for all screens'''
     global playerselect, amountPlayers, playercomplete, nameselect, namecomplete, nameholder, usernames, currentplayername
-    global currentname, gamescreen, rolled, turn, paytext, numberrolled, menu, nathan, level, positions, items
+    global currentname, gamescreen, rolled, turn, paytext, numberrolled, menu, nathan, level, positions, items, once, pech
     global valkuilen
     #playerselect scherm buttons, nameselect scherm buttons en gamescreen scherm buttons
     if playerselect:
@@ -520,6 +543,7 @@ def mouseSteven():
             rect(1240,680,1390,740)
             nameselect = False
             gamescreen = True
+            audrius.setData(usernames, positions, level)
             if len(valkuilen) == 0:
                 standaard()
     if gamescreen:
@@ -527,12 +551,16 @@ def mouseSteven():
             if 1640 < mouseX < 1790 and 640 < mouseY < 740 and rolled == True:#button om naar volgende beurt te gaan
                 fill(0) 
                 rect(1640,640,1790,740)
+                if pech:
+                    pech = False
                 if turn<amountPlayers-1:
                     turn = turn + 1
+                    once = True
                     paytext=False
                 elif turn == amountPlayers-1:
                     turn = turn - (amountPlayers-1)
                     paytext=True
+                    once = True
                 rolled = False
             if 1530 < mouseX < 1630 and 640 < mouseY < 740 and rolled == False:#button om te rollen
                 rolled = True
@@ -709,8 +737,14 @@ def nameselect1():
         
     #laat zien wanneer je muis over een button is, toevoegen, terug en start------------------------------------------------
     if 610 < mouseX < 760 and 680 < mouseY < 740:
-        if namecomplete == False:
-            fill(200, 0, 0)
+        if namecomplete == False and currentname == '':
+            fill(200)
+            rect(610,680,760,740)
+            fill(0)
+            textSize(20)
+            text('Toevoegen',685,715)
+        elif not namecomplete:
+            fill(0, 255, 0)
             rect(610,680,760,740)
             fill(0)
             textSize(20)
@@ -723,7 +757,7 @@ def nameselect1():
         text('Terug',350,820)
     if 1240 < mouseX < 1390 and 680 < mouseY < 740:
         if namecomplete:
-            fill(200)
+            fill(0,255,0)
             rect(1240,680,1390,740)
             fill(0)
             textSize(20) 
@@ -731,7 +765,8 @@ def nameselect1():
             
 def gamescreen1():
     '''game screen'''
-    global amountPlayers, usernames, numberrolled, paytext, items, turn
+    global amountPlayers, usernames, numberrolled, paytext, items, turn, pech
+    global positions, level, once
     setBackground() 
     rectMode(CORNERS)
     textAlign(CENTER)
@@ -761,8 +796,27 @@ def gamescreen1():
     fill(255)
     rect(510,300,1210,750)
     rect(510,190,1210,290)
+    #POSITION DATA AND LEVEL DATA || REEE
+    fill(0)
+    textAlign(LEFT)
+    textSize(45)
+    text('Positie: ' + str(positions[turn]), 510, 340)
+    text('Level: ' + str(level[turn]), 510, 380)
+    lvlInfo = 'Informatie Level: ' + audrius.levels[level[turn]]
+    if textWidth(lvlInfo) >= 700:
+        text('Informatie Level:', 510, 420)
+        text('  ' + audrius.levels[level[turn]], 510, 460)
+    else:
+        text(lvlInfo, 510, 420)
+    
+    if pech:
+        fill(255, 0, 0)
+        textSize(32)
+        text('Speler ' + usernames[ positions.index( positions[turn]-1 ) ] + ': ' + usernames[turn] + ' is hier!', 510, 580)
+        text('Speler ' + usernames[ positions.index( positions[turn]-1 ) ] + ': Ga 1 vak terug', 510, 620)
     
     #beurt van rect en onder beurt van rect -------------------------------------------------
+    fill(255)
     rect(1220,190,1800,290)
     rect(1220,300,1800,750)
     
@@ -808,6 +862,30 @@ def gamescreen1():
             
     #als er al gerollt is dan wordt volgende beurt knop groen ----------------------------------------------------
     if rolled:
+        if once:
+            #check if there is someone on the space before us-----------------------------------------------------
+            if positions[turn] + int(numberrolled) in positions and not positions[turn] + int(numberrolled) > level[turn] + 20:
+                positions[ positions.index( positions[turn] + int(numberrolled) ) ] -= 1
+                positions[turn] += int(numberrolled)
+                pech = True
+            #if we reached the end we must throw the required eyes to pass
+            elif positions[turn] == level[turn] * 20 + 20:
+                if int(numberrolled) >= level[turn] + 3:
+                    positions[turn] += 1
+                    
+            #check if we reach the end level, we must stop----------------------------------------------------------------------
+            elif positions[turn] + int(numberrolled) > level[turn] * 20 + 20:
+                positions[turn] = level[turn] * 20 + 20
+                
+            #by default add the rolled amount to it-----------------------------------------------------------------------------
+            else:
+                positions[turn] += int(numberrolled)
+                
+            #update the levels--------------------------------------------------------------------------------------------------
+            audrius.updateLevels()
+            #positions check || Nathan Samijo------------------------------------------------------------------------------------
+            positionCheck()
+            once = False
         fill(0,200,0)
         rect(1640,640,1790,740)
         fill(0)
@@ -819,10 +897,6 @@ def gamescreen1():
     else:
         rect(1530,640,1630,740) #rollen knop
         image(rollthedice,1531,641)
-    
-    #positions check || Nathan Samijo
-    
-    #kijkt of the user een item heeft of niet || Nathan Samijo
         
     #als iedereen is geweest
     if paytext:
@@ -855,8 +929,6 @@ def gamescreen1():
             tint(200)
             image(rollthedice,1531,641)  
             noTint()
-        else:
-            noTint()
     
 #main game || screen calling || button functionality
 def allScreens():
@@ -879,16 +951,27 @@ def allScreens():
             nameselect1()
         elif gamescreen:
             gamescreen1()
+    elif Audrius:
+        if event:
+            audrius.eventScreens()
         
 def allMouseAreas():
     '''this is the collective function where the buttons getfunctionality'''
-    global nathan, jan, steven
+    global nathan, jan, steven, Audrius, once
+    global event
     if nathan:
         mouseNathan()
     elif jan:
         mouseJan()
     elif steven:
         mouseSteven()
+    elif Audrius:
+        if event:
+            temp = audrius.mouseEvent()
+            if temp != None:
+                Audrius = temp
+                steven = not Audrius
+                once = steven            
         
 def allKeyAreas():
     global steven, nameselect

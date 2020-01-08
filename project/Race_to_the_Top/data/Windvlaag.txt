@@ -1,0 +1,2 @@
+Elke speler moet 5 stappen voorruit.
+Als een speler bij het eind van een level komt gaat de speler naar het volgende level.

@@ -1,0 +1,2 @@
+Iedereen gooit zijn dobbelsteen:
+- Het aantal gegooide ogen zijn het aantal stappen dat elke speler vooruit moet.

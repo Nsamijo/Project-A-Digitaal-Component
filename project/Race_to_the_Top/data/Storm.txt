@@ -1,0 +1,4 @@
+Iedereen gooit zijn dobbelsteen; 
+Het aantal gegooide ogen zijn het aantal stappen dat elke speler terug moet. 
+Indien een speler bij het begin van een level komt en nog steeds terug moet:
+Dan moet deze terug naar het volgende level

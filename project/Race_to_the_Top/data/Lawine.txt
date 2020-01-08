@@ -1,0 +1,2 @@
+Elke speler moet 5 stappen terug.
+Als een speler bij het begin van een level komt moet de speler terug naar het vorige level.

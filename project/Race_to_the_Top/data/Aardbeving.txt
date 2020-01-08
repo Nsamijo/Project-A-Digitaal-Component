@@ -1,0 +1,4 @@
+De posities van de spelers worden genummerd. 
+Iedereen gooit zijn dobbelsteen.
+De speler met het hoogst aantal ogen neemt de positie in van de eerste plaats enz. 
+Blijf opnieuw gooien tot elke speler verschillende ogen heeft gegooid.
