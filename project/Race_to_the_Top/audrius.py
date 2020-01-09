@@ -2,9 +2,12 @@ import random
 import copy
 
 eventList = ['Aardbeving', 'Binnenweg', 'Explosieven', 'Goudmijn', 'Lawine', 'Medic', 'Overval', 'Schatkist', 'Storm', 'Windvlaag']
+specialItems = ['boat.png', 'machete.png', 'water.png', 'axe.png']
+toeristen = PImage
 levels = ['Voet van de Berg', 'Rivier', 'Jungle', 'Woestijn', 'Gletsjer']
 dices = []
 eventImages = []
+itemsImages = []
 eventImage = PImage
 selectedEvent = ''
 
@@ -12,7 +15,9 @@ selectedEvent = ''
 usernames = []
 positions = []
 level = []
-trigger = ''
+items = []
+levelItems = []
+trigger = 0
 turn = 0
 
 #to keep track of what is rolled
@@ -43,9 +48,10 @@ help = False
 #binnenweg en aardbeving
 shaky = False
 shortcut = False
-first = False
+first = True
 seconD = False
 rollAgain = False
+thunder = False
 
 #to only execute once
 once = True
@@ -57,7 +63,7 @@ rolled = None
 next = False
 
 def audriusSetup():
-    global eventList, eventImages, dices
+    global eventList, eventImages, dices, toeristen, specialItems, itemsImages
     for x in eventList:
         eventImages.append(loadImage(x + '.jpg'))
     eventImages.append(loadImage('eventphoto.jpg'))
@@ -67,6 +73,14 @@ def audriusSetup():
     dices.append(loadImage('roll.png'))
     for x in dices:
         x.resize(150, 150)
+    
+    #load the images in voor de toeristen || die houden toch ervan om foto's te maken || #justasianstuff
+    toeristen = loadImage('Tbackground.png')
+    for x in specialItems:
+        itemsImages.append(loadImage(x))
+    for x in itemsImages:
+        x.resize(150, 150)
+    toeristen.resize(width, height)
     
 #This is for the dices
 def checkPoint():
@@ -103,7 +117,7 @@ def roll():
 def loading():
     '''loading to the Event'''
     global xSize, ySize, x, y, selectedEvent, eventImages
-    global goldRobber, treasure, boom, flyOrFall, help, shortcut, first, shaky
+    global goldRobber, treasure, boom, flyOrFall, help, shortcut, first, shaky, thunder
     selectedEvent = random.choice(eventList)
     
     #filter which screen
@@ -114,7 +128,8 @@ def loading():
     help = selectedEvent == 'Medic'
     shortcut = selectedEvent == 'Binnenweg'
     shaky = selectedEvent == 'Aardbeving'
-    first = shortcut or shaky
+    thunder = selectedEvent == 'Storm'
+    first = shortcut or shaky or thunder
     
     if frameCount % 5 == 0:
         img = random.choice(eventImages)
@@ -188,12 +203,14 @@ def description():
         text(x, 390, startY)
         startY += 30
         
-def setData(users, pos, lvl):
+def setData(users, pos, lvl, itms, lvlitms):
     '''get the data from the players'''
-    global usernames, positions, level
+    global usernames, positions, level, items, levelItems
     usernames = users
     positions = pos
     level = lvl
+    items = itms
+    levelItems = lvlitms
 
 def setTriggerMan(triggerman):
     '''get the guy that has triggered the event || CONSEQUENCES'''
@@ -359,14 +376,17 @@ def ba_BOOM():
     global eventImage, turn
     #LOGIC
     #get the data from the player and change that first
-    player = usernames.index(trigger)
     startLvls = [0, 21, 41, 61, 81]
-    positions[player] = startLvls[level[player]]
-
+    if level[trigger] == 0: 
+        positions[trigger] = 0
+    else:
+        positions[trigger] = level[trigger] * 20 + 21
     #change all of the players in the same level
+    temp = 0
     for x in level:
-        if level[player] == x:
-            positions[level.index(x)] = positions[player]
+        if level[trigger] == x:
+            positions[temp] = positions[trigger]
+        temp += 1
             
     #SCREEN
     #display the stuff ya know and with stuff we mean data
@@ -376,7 +396,7 @@ def ba_BOOM():
     title(80)
     
     #Kijken of een event effect heeft op een speler of niet
-    if positions[turn] == positions[player]:
+    if level[turn] == level[trigger]:
         data = 'Speler ' + usernames[turn] + ': Ga terug naar het begin van de level'
     else:
         data = 'Speler ' + usernames[turn] + ': Deze event heeft geen effect op jou'
@@ -442,17 +462,24 @@ def goudmijnOverval():
         
 def schatKist():
     '''screen for out treasure || YEAH WE RICH BOI'''
-    global eventImage, turn, usernames
+    global eventImage, turn, usernames, once, items
     background(eventImage)
     textSize(64)
     title(80)
     
     #Player get to take a item || probably the shortest function that has a screen
-    data = 'Speler ' + usernames[turn] + ': Pak een voorwerp'
+    if items[turn] < 3:
+        data = 'Speler ' + usernames[turn] + ': Pak een voorwerp'
+    else:
+        data = 'Speler ' + usernames[turn] + ': Item limiet bereikt'
     fill(255, 215, 0)
     rect(width/2 - textWidth(data)/2, height / 2 - 50, textWidth(data), 100)
     fill(0)
     text(data, width / 2, height / 2 + 20)
+    
+    if once and items[turn] < 3:
+        items[turn] += 1
+        once = False
     
     #buttons || exit or next player
     if turn  + 1 == len(usernames):
@@ -495,11 +522,6 @@ def medic():
     else:
         fill(255)
         rect(width / 2 - textWidth(toMove) / 2, height / 2 - 100, textWidth(toMove) , 75)
-        if once:
-            if positions[ positions.index( min(positions) ) ] + sum(rolledList) in positions:
-                positions[positions.index(positions[ positions.index( min(positions) ) ] + sum(rolledList)) ] -= 1
-            positions[ positions.index( min(positions) ) ] += sum(rolledList)
-            once = False
             
     if len(rolledList) < len(usernames):
         fill(255, 0, 0)
@@ -515,8 +537,9 @@ def medic():
         text(toMove, width / 2 - textWidth(toMove) / 2, height / 2 - 40)
         if once:
             #update the position
-            for x in rolledList:
-                positions[usernames.index(last) ] += x
+            if positions[ positions.index( min(positions) ) ] + sum(rolledList) in positions:
+                positions[positions.index(positions[ positions.index( min(positions) ) ] + sum(rolledList)) ] -= 1
+            positions[ positions.index( min(positions) ) ] += sum(rolledList)
             once = False
     if not once:
         showCustomStats(usernames.index(last), 255)
@@ -570,7 +593,7 @@ def binnenWeg():
             text(data, width / 2 - textWidth(rule) / 2, height / 2 + 100)
             
         if once and len(rolledList) == len(usernames):
-            for x in range(4):
+            for x in range(len(usernames)):
                 positions[x] += sum(rolledList)
                 updateLevels()
             once = False
@@ -660,7 +683,76 @@ def earthDoesTheMacarena():
         if turn + 1 == len(usernames):
             exitButton()
         else:
-            nextPlayerButton()    
+            nextPlayerButton()  
+            
+def lightningMcQueen():
+    '''this is the storm || KA-CHOW || Fast like lightning'''
+    global positions, usernames, level, levels, rolledList, once
+    global next, eventImage, turn
+    background(eventImage)
+    textSize(64)
+    title(80)
+    textAlign(LEFT)
+
+    #setup the text real good
+    rule = 'Iedereen rolt om terug te gaan'
+    data = 'Speler ' + usernames[turn] + ': Rol de dobbelsteen om terug the gaan :) '
+    
+    if first:
+        toMove = 'Aantal posities terug tot nu toe: ' + str( sum(rolledList) )
+    else:
+        toMove = 'Speler ' + usernames[turn] + ': Ga ' + str( sum(rolledList) ) + ' posities achteruit'
+    
+    #draw the rectangles for our data
+    if first:
+        fill(255)
+        if textWidth(rule) > textWidth(data):
+            rect(width / 2 - textWidth(rule) / 2, height / 2 - 100, textWidth(rule), 200)
+        else:
+            rect(width / 2 - textWidth(data) / 2, height / 2 - 100, textWidth(data), 200)
+            
+        rect(width / 2 - textWidth(toMove) / 2, height / 2 + 120, textWidth(toMove) , 75)
+    elif seconD:
+        fill(255)
+        rect(width / 2 - textWidth(toMove) / 2, height / 2 - 100, textWidth(toMove) , 75)
+            
+    if first:
+        fill(255, 0, 0)
+        if textWidth(rule) > textWidth(data):
+            text( rule, width / 2 - textWidth(rule) / 2, height / 2 - 40)
+            text(data, width / 2 - textWidth(rule) / 2, height / 2, + 40)
+        else:
+            text( rule, width / 2 - textWidth(data) / 2, height / 2 - 40)
+            text(data, width / 2 - textWidth(data) / 2, height / 2 + 40)
+        text(toMove, width / 2 - textWidth(toMove) / 2, height / 2 + 180)
+    elif seconD:
+        fill(255, 0, 0)
+        text(toMove, width / 2 - textWidth(toMove) / 2, height / 2 - 40)
+        if once:
+            #update the position
+            for x in usernames:
+                positions[usernames.index(x)] -= sum(rolledList)
+                if positions[usernames.index(x)] < 0:
+                    positions[usernames.index(x)] = 0
+                updateLevels()
+            once = False
+            
+    if not once:
+        showCustomStats(turn, 255)
+        
+    #the dices and the buttons
+    if not next:
+        displayDice(width / 2 - 75, height / 2 + 200)
+    elif next and frameCount - start < runTime:
+        rollingDice(width / 2 - 75, height / 2 + 200)
+    elif next and first:
+        displayRolled(width / 2 - 75, height / 2 + 200)
+    #buttons here || exit or next player
+    if next:
+        if turn  + 1 == len(usernames) and not first:
+            exitButton()
+        else:
+            nextPlayerButton()
 
 def exit():
     '''user to return back to the players screens'''
@@ -689,7 +781,7 @@ def reset():
     describe = False
     
     #screens binnenweg
-    first = False
+    first = True
     seconD = False
     
     #last
@@ -709,7 +801,7 @@ def mouseEvent():
     global usernames, turn
     global load, eventScreen, describe
     global goldRobber, next, turn
-    global treasure, boom, flyOrFall, help, shortcut, first, seconD, shaky
+    global treasure, boom, flyOrFall, help, shortcut, first, seconD, shaky, thunder
     global rolled, rolledList
     if load:
         load = False
@@ -741,6 +833,8 @@ def mouseEvent():
         if width - 350 < mouseX < width - 50 and height - 200 < mouseY < height - 125:
             if turn < len(usernames) - 1:
                 turn += 1
+                if treasure:
+                    once = True
             else:
                 turn = 0
                 return exit()
@@ -805,11 +899,33 @@ def mouseEvent():
                 else:
                     turn = 0
                     return exit()
+    elif thunder:
+        if first:
+            if width / 2 - 75 < mouseX < width / 2 + 75 and height / 2 + 200 < mouseY < height / 2 + 350 and not next:
+                next = True
+                checkPoint()
+                roll()
+                rolledList.append(rolled)
+            elif next and width - 350 < mouseX < width - 50 and height - 200 < mouseY < height - 125:
+                if turn < len(usernames) - 1:
+                    turn += 1
+                    next = False
+                elif turn + 1 == len(usernames):
+                    turn = 0
+                    first = False
+                    seconD = True
+        elif seconD:
+            if width - 350 < mouseX < width - 50 and height - 200 < mouseY < height - 125:
+                if turn < len(usernames) - 1:
+                    turn += 1
+                else:
+                    turn = 0
+                    return exit()
             
 def eventScreens():
     '''event screens || all will be linked here'''
     global load, eventScreen, selectedEvent
-    global goldRobber,  treasure, boom, flyOrFall, help, shortcut, shaky
+    global goldRobber,  treasure, boom, flyOrFall, help, shortcut, shaky, thunder
     if load:
         loading()
     elif eventScreen:
@@ -828,3 +944,122 @@ def eventScreens():
         binnenWeg()
     elif shaky:
         earthDoesTheMacarena()
+    elif thunder:
+        lightningMcQueen()
+        
+#einde events ---------------------------------------------------------------------------------- nu voor de toeristen
+def toeristScreen():
+    '''this here will be the shop for toerists'''
+    global level, trigger, toeristen, usernames, levels, itemsImages, once
+    global first
+    #settings
+    background(toeristen)
+    rectMode(CORNER)
+    textAlign(CENTER)
+    
+    #check if the user has not exceeded items max limit
+    if items[trigger] == 3:
+        once = False
+    #title--------------------------------------------------------------------------------------
+    textSize(64)
+    if level[trigger] == 0:
+        fill(0, 0, 255)
+    elif level[trigger] == 1:
+        fill(0, 255, 0)
+    elif level[trigger] == 2:
+        fill(255, 51, 255)
+    else:
+        fill(255)
+    rect(width / 2 - textWidth(levels[trigger]) / 2, 80, textWidth(levels[trigger]), 80)
+    fill(0)
+    text(levels[level[trigger] + 1], width / 2, 140)
+    #-------------------------------------------------------------------------------------------
+    #item placement || show which item they can buy
+    if level[trigger] == 0:
+        fill(0, 0, 255)
+    elif level[trigger] == 1:
+        fill(0, 255, 0)
+    elif level[trigger] == 2:
+        fill(255, 51, 255)
+    else:
+        fill(255)
+    textSize(60)
+    itemList = ['Boat', 'Machete', 'Waterfles', 'IJsbijl']
+    prijzen = ['5 munten', '10 munten', '15 munten', '20 munten']
+    if items[trigger] == 3:
+        lvl = 'Voorwerp limit bereikt'
+    else:
+        lvl = 'Level item: ' + itemList[level[trigger]]
+    prize = prijzen[level[trigger]]
+    #boxes for the item image and buy option
+    rect(width / 2 - 300, height / 2 - 50, 300, 300)
+    rect(width / 2, height / 2 - 50, 300, 300)
+    rect(width / 2 - textWidth(lvl) / 2, height / 2 - 200, textWidth(lvl), 80)
+    
+    #for the big boxes text and a image and level item------------------------------------
+    fill(0)
+    text(lvl, width / 2, height / 2 - 140, 140)
+    image(itemsImages[level[trigger]] , width / 2 + 75, height / 2 + 20)
+    
+    #koop knop---------------------------------------------------------------------------
+    textSize(45)
+    if once:
+        fill(255, 0, 0)
+    else:
+        fill(200)
+    rect(width / 2 - 150 - textWidth('Koop') / 2, height / 2 + 185, textWidth('Koop'), 60)
+    fill(0)
+    text('Koop', width / 2 - 150, height / 2 + 225)
+    text('Prijs:', width / 2 - 150, height / 2 + 40)
+    text(prize, width / 2 - 150, height / 2 + 80)
+    
+    #confirmation || so that people don't cheat-----------------------------------------
+    if not first:
+       fill(255)
+       textSize(45)
+       rect(width / 2 - 300, height / 2 - 50, 600, 300)
+       fill(0)
+       text('Genoeg geld?', width / 2, height / 2 + 10)
+       
+       #not enough money----------------------------------------------------------------
+       fill(255, 0, 0)
+       rect(width / 2 - 250, height / 2 + 180, textWidth('I lied'), 55) 
+       fill(0)
+       text('I lied', width / 2 - 250 + textWidth('I lied') / 2, height / 2 + 220)
+       
+       #rich gang || *throws money* ----------------------------------------------------
+       fill(0, 255, 0)
+       rect(width / 2 + 3, height / 2 + 180, textWidth('Gucci Gang'), 55) 
+       fill(0)
+       text('Gucci Gang', width / 2 + 3 + textWidth('Gucci Gang') / 2, height / 2 + 220)
+    
+    #exit button-------------------------------------------------------------------------
+    if first:
+        textAlign(LEFT)
+        if width - 300 < mouseX < width - 100 and height - 200 < mouseY < height - 145:
+            fill(255, 0, 0)
+        else:
+            fill(200, 0, 0)
+        rect(width - 300, height - 200, 200, 55)
+        fill(0)
+        text('Exit Shop', width - 300, height - 160)
+    
+def mouseToerist():
+    '''mouse functionality voor de toeristenwinkel'''
+    global first, levelItems, seconD, trigger, once, items
+    if first:
+        if width - 300 < mouseX < width - 100 and height - 200 < mouseY < height - 145:
+            first = True
+            return exit()
+        if width / 2 - 150 - textWidth('Koop') / 2 < mouseX < width / 2 - 150 + textWidth('Koop') and height / 2 + 185 < mouseY < height / 2 + 245 and once:
+            first = False
+    elif not first:
+        textSize(30)
+        if width / 2 + 3 < mouseX < width / 2 + 250 and height / 2 + 180 < mouseY < height / 2 + 235:
+            if once and items[trigger] + 1 <= 3:
+                levelItems[trigger].append(['Boat', 'Machete', 'Waterfles', 'IJsbijl'][level[trigger]])
+                items[trigger] += 1
+                once = False
+            first = True
+        if width / 2 - 250 < mouseX < width / 2 - 250 + 106 and height / 2 + 180 < mouseY < height / 2 + 235:
+            first = True

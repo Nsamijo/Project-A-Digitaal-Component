@@ -1,0 +1,29 @@
+Spelregels:
+
+- Nadat alle spelers aan de beurt zijn geweest ontvangen deze 1 Biljet. 
+  Dit wordt verdeeld door de laatste speler nadat hij/zij zijn beurt heeft afgemaakt.
+
+- De Verliezers Bonus: Pas als de eerste speler het Rivier level heeft bereikt gaat deze in. 
+  Dit is bedoeld voor de speler op de laatste positie en houd in dat deze 
+  ÉÉN extra Race Biljet ontvangt.
+
+- Aan het eind van een level, aangegeven met een rood gekleurde vak, 
+  moet de speler stoppen en wachten tot de volgende beurt om naar 
+  het nieuwe level te klimmen.
+  Om verder te kunnen moet er hoger of gelijk aan een specifiek nummer gegooid worden. 
+  Spelers stoppen hierna op een toeristenwinkel. 
+  *Zie handleiding voor specifieke waarden
+
+- Als twee spelers op hetzelfde vak staan moet de pion die er het eerst op stond 1 stap terug.
+  Deze regel geldt niet op een stop vak aan het eind van een level of een vak waarop 
+  een kamp is geplaatst. 
+  Wel geldt dit op de toeristenwinkel, waardoor de speler weer terug naar 
+  het vorige level gegooid wordt.
+
+- Een speler mag maximaal 2 uitrustingen en 3 normale voorwerpen in bezit hebben. 
+  Een speler mag 1 uitrusting/voorwerp per beurt gebruiken en/of weggooien.
+
+- Als een speler door speciale handelingen terug moet en op een speciaal vak terecht komt
+  geldt deze niet en mag de speler er ook geen gebruik van maken.
+
+

@@ -1,0 +1,32 @@
+Schermen informatie:
+
+Start met een opstelling te kiezen door in het hoofdmenu op 'Opstelling' te drukken.
+Op het volgende scherm zal gekozen kunnen worden tussen Standaard en Randomized.
+
+Standaard is de basis opstelling van het spel. 
+Randomized is voor een willeukerige plaatsing van de pionnen.
+Als er geen Opstelling gekozen is word de standaard opstelling als basis gepakt.
+
+Implementeer de gekozen opstelling op het fisieke bord met de desbetreffende pionnen.
+
+Druk 2 keer op terug om weer bij het hoofdmenu te komen.
+Hierna kan het spel gestart worden.
+Na op Start Spel gedrukt te hebben kan het aantal spelers gekozen worden. 
+Druk op een nummer en bevestig de keuze door rechtsonderin op 'volgende' te drukken.
+
+Afhankelijk van het aantal spelers gekozen op het vorige scherm
+zullen er spelersnamen ingevuld moeten worden van maximaal 10 tekens.
+
+Na een naam ingevuld te hebben deze bevestigen door op toevoegen te drukken 
+Deze knop staat links onder in het witte vak.
+
+Als alle namen ingevuld zijn verschijnt de startknop en zal het spel beginnen.
+
+
+De naam van de speler dat aan de beurt is zal in het groen weergeven staan. 
+De speler kan zijn beurt beginnen door op het dobbelsteen plaatje te klikken.
+Deze staat naast de rode 'Volgende' knop
+Hierna zal de waarde naast het plaatje verschijnen. 
+
+Na gegooid te hebben zal de spelers naam overgaan op een rode kleur.
+De beurt eindigd door op het groene volgende beurt knop te klikken.
