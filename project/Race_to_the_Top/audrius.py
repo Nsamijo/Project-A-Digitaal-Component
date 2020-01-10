@@ -11,6 +11,21 @@ itemsImages = []
 eventImage = PImage
 selectedEvent = ''
 
+#geluksvogel
+vogelX = 0
+vogelY = 100
+vogelImg = PImage
+vogelImg2 = PImage
+stay = False
+take = None
+
+#shop
+text1 = 'Je bent in level: '
+text2 = 'Item prijs: '
+itemText = 'Pak een voorwerpkaart'
+backgroundImg = PImage
+voorwerp = PImage
+
 #player data
 usernames = []
 positions = []
@@ -63,7 +78,7 @@ rolled = None
 next = False
 
 def audriusSetup():
-    global eventList, eventImages, dices, toeristen, specialItems, itemsImages
+    global eventList, eventImages, dices, toeristen, specialItems, itemsImages, vogelImg, vogelImg2, backgroundImg, voorwerp
     for x in eventList:
         eventImages.append(loadImage(x + '.jpg'))
     eventImages.append(loadImage('eventphoto.jpg'))
@@ -81,6 +96,13 @@ def audriusSetup():
     for x in itemsImages:
         x.resize(150, 150)
     toeristen.resize(width, height)
+    
+    vogelImg = loadImage('eagle1.png')
+    vogelImg2 = loadImage('eagle2.png')
+    
+    backgroundImg = loadImage('shop.png')
+    backgroundImg.resize(width, height)
+    voorwerp = loadImage('voorwerp.jpg')
     
 #This is for the dices
 def checkPoint():
@@ -763,7 +785,7 @@ def reset():
     '''reset all the values for a new event'''
     global load, eventScreen, describe
     global xSize, ySize, x, y, selectedEvent
-    global turn, rolled, next, once, last, rolledList, first, seconD
+    global turn, rolled, next, once, last, rolledList, first, seconD, stay
     turn = 0
 
     rolled = ''
@@ -779,6 +801,9 @@ def reset():
     load = True
     eventScreen = False
     describe = False
+    
+    #geluksvogel
+    stay = False
     
     #screens binnenweg
     first = True
@@ -1063,3 +1088,131 @@ def mouseToerist():
             first = True
         if width / 2 - 250 < mouseX < width / 2 - 250 + 106 and height / 2 + 180 < mouseY < height / 2 + 235:
             first = True
+            
+#geluksvogel-------------------------------------------------------------------------------------------------------
+def geluksVogel():
+    '''fly birdy fly! || screen for our lucky bird'''
+    global vogelX, vogelY, stay, newText, items, trigger, take, once
+    #setting and title---------------------------
+    textAlign(CENTER)
+    rectMode(CORNER)
+    textSize(64)
+    fill(255)
+    rect(width / 2 - textWidth('Geluksvogel') / 2, 200, textWidth('Geluksvogel'), 100)
+    fill(0)
+    text('Geluksvogel', width / 2, 260)
+    
+    #instructie-----------------------------------------------------------------
+    if not stay:
+        data = 'Klik op de vogel!'
+    else:
+        #check if the user should take a item or throw one away
+        if once:
+            if items[trigger] == 3:
+                    items[trigger] -= 1
+                    take = False
+            else:
+                items[trigger] += 1
+                take = True
+            once = False
+            
+        if take:
+            data = 'Pak een random voorwerp!'
+        else:
+            data = 'Pech! Teveel items bij je! Gooi eentje weg!'
+    fill(255)
+    rect(width / 2 - textWidth(data) / 2, height / 2 - 60, textWidth(data), 100)
+    fill(0)
+    text(data , width / 2, height / 2)
+    
+    #terug knop
+    if width - 400 < mouseX < width - 50 and height - 200 < mouseY < height - 145:
+        fill(255, 0, 0)
+    else:
+        fill(200, 0, 0)
+    textSize(45)
+    textAlign(LEFT)
+    rect(width - 400, height - 200,  350, 55, 10)
+    fill(0)
+    text('Terug naar spel', width - 400, height - 160)
+    
+    #movement for the bird
+    if vogelY == 100:
+        image(vogelImg, vogelX , vogelY)
+        vogelX += 5
+    if vogelY == 200:
+        image(vogelImg2, vogelX, vogelY)
+        vogelX -= 5
+    if vogelX == width - vogelImg2.width:
+        image(vogelImg2, vogelX, vogelY)
+        vogelY += 5
+    if vogelX == 0:
+        image(vogelImg, vogelX , vogelY)
+        vogelY -= 5
+
+def mouseVogel():
+    '''functionality for the bird'''
+    global stay, vogelX, vogelY, vogelImg, items, trigger
+    #klik the moving bird
+    if vogelX < mouseX < (vogelX + vogelImg.width) and vogelY < mouseY < (vogelY + vogelImg.height):
+        stay = True
+    #exit and go back to the game
+    if width - 400 < mouseX < width - 50 and height - 200 < mouseY < height - 145:
+        #speler keert terug naar spel
+        return exit()
+    
+#normal shop-----------------------------------------------------------------------------------------just for the locals
+def shop():
+    '''shop for the shopper'''
+    global backgroundImg, levels, level, trigger, voorwerp, once
+    global items
+    background(backgroundImg)
+    rectMode(CORNER)
+    textAlign(LEFT)
+    textSize(68)
+    fill(255)
+    text('Shop', 900, 120)
+    textSize(40)
+    fill(255)
+    rect(80, 0, textWidth(text1 + str(levels[level[trigger]])), 120)
+    fill(0)
+    text(text1 + str(levels[level[trigger]]), 80, 50)
+    text(text2 + str(level[trigger] * 2 + 2), 80, 100)
+    fill(255)
+    if 100 < mouseX < 420 and 360 < mouseY < 420:
+        fill(200)
+    if not stay:
+        rect(100, 350, 330, 75, 10) #Item koop knop
+        fill(0)
+        text('Voorwerp kopen', 100, 400)
+    elif stay:
+        if once:
+            if not items[trigger] == 3:
+                items[trigger] += 1
+                once = False
+        image(voorwerp, 1300, 430)
+        fill(255)
+        rect(850, 580, 440, 70)
+        fill(0)
+        if items[trigger] < 3:
+            text(itemText, 850, 630)
+        else:
+            text('Oops! Teveel items', 850, 630)
+    
+    #exit button----------------------------------------------------------------------------------
+    fill(200, 0, 0)
+    if 100 < mouseX < 400 and 150 < mouseY < 220:
+        fill(255, 0 , 0)
+    rect(100, 150, 305, 70, 10)
+    fill(0)
+    text('Terug naar spel', 100, 200)
+
+    fill(255)
+
+def mouseShop():
+    '''functionality for the buttons shop'''
+    global stay
+    if 100 < mouseX < 420 and 360 < mouseY < 420:
+        stay = True
+    if 100 < mouseX < 400 and 150 < mouseY < 220:
+        return exit()
