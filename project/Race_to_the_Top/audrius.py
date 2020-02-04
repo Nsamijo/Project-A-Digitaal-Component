@@ -500,7 +500,8 @@ def schatKist():
     text(data, width / 2, height / 2 + 20)
     
     if once and items[turn] < 3:
-        items[turn] += 1
+        for x in range(len(usernames)):
+            items[turn] += 1
         once = False
     
     #buttons || exit or next player

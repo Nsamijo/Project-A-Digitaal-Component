@@ -1229,7 +1229,7 @@ def mouseRugzak():
                     positions[turn] += 1
                     positionCheck()
                     used = True
-            if vImages[turn].width + 20 < mouseX < vImages[turn].width * 2 + 20:
+            if vImages[turn].width + 20 < mouseX < vImages[turn].width * 2 + 20 and rolled:
                 used = True
                 rolled = False
                 once = True
